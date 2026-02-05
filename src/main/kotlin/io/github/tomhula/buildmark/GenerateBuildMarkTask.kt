@@ -32,7 +32,12 @@ internal abstract class GenerateBuildMarkTask : DefaultTask()
         val options = options.get()
         
         val properties = options.map { option ->
-            converter.convert(option.value).let { value -> "val ${option.key} = $value" }
+            val variableDeclaration = if (option.value::class in constableTypes)
+                "const val" 
+            else
+                "val"
+                
+            converter.convert(option.value).let { value -> "$variableDeclaration ${option.key} = $value" }
         }
         
         val code = buildString { 
@@ -54,5 +59,21 @@ internal abstract class GenerateBuildMarkTask : DefaultTask()
         val outputFile = outputDirectory.resolve(packageAsPath).resolve("$targetObjectName.kt")
         outputFile.parentFile.mkdirs()
         outputFile.writeText(code)
+    }
+    
+    companion object
+    {
+        /** All types using which you can declare a compile-time constant with the 'const' keyword. */
+        private val constableTypes = listOf(
+            String::class,
+            Char::class,
+            Byte::class,
+            Short::class,
+            Int::class,
+            Long::class,
+            Float::class,
+            Double::class,
+            Boolean::class,
+        )
     }
 }
