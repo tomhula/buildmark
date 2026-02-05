@@ -5,13 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.jetbrains.gradle.ext.IdeaExtPlugin
-import org.jetbrains.gradle.ext.settings
-import org.jetbrains.gradle.ext.taskTriggers
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -39,10 +34,12 @@ class BuildMark : Plugin<Project>
         project.tasks.withType<KotlinCompile> {
             dependsOn(generateTask)
         }
-
-        project.plugins.apply(IdeaExtPlugin::class.java)
         
-        project.extensions.getByType<IdeaModel>().project.settings.taskTriggers.afterSync(generateTask)
+        /* This is so that the sources are available after Gradle sync,
+         * so you can reference the generated code and get IDE support before building. */
+        project.afterEvaluate { 
+            generateTask.get().generate()
+        }
     }
 
     private fun configureExtensionConventions(

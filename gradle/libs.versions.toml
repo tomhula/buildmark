@@ -1,12 +1,10 @@
 [versions]
 kotlinpoet = "2.1.0"
 kotlin-gradle-plugin = "2.1.20"
-gradle-idea-ext = "1.1.10"
 
 [libraries]
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-plugin" }
-gradle-idea-ext-plugin = { module = "gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext", version.ref = "gradle-idea-ext" }
 kotlin-scripting-common = { module = "org.jetbrains.kotlin:kotlin-scripting-common" }
 kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
 kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
