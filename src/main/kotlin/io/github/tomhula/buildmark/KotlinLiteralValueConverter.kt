@@ -86,7 +86,7 @@ internal class KotlinLiteralValueConverter
             
             CodeBlock.of("'%L'", literal)
         }
-        registerConvertor(Pair::class) { CodeBlock.of("%L to %L", convert(it.first), convert(it.second)) }
+        registerConvertor(Pair::class) { CodeBlock.of("(%L) to (%L)", convert(it.first), convert(it.second)) }
     }
 
     private fun registerCollectionConverters()
