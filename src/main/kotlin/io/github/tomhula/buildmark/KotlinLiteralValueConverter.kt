@@ -145,7 +145,14 @@ internal class KotlinLiteralValueConverter
                     else -> CodeBlock.of("%L", it.toString())
                 }
         }
-        registerConvertor(Long::class) { CodeBlock.of("%LL", it) }
+        registerConvertor(Long::class) { 
+            when (it)
+            {
+                Long.MAX_VALUE -> CodeBlock.of("Long.MAX_VALUE")
+                Long.MIN_VALUE -> CodeBlock.of("Long.MIN_VALUE")
+                else -> CodeBlock.of("%LL", it) 
+            }
+        }
     }
 
     private fun registerArrayConverters()
