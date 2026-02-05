@@ -83,7 +83,6 @@ internal class KotlinLiteralValueConverter
     {
         setOf(
             Int::class,
-            Double::class,
             Boolean::class
         ).forEach { literalType -> registerConvertor(literalType) { CodeBlock.of("%L", it) } }
 
@@ -102,7 +101,26 @@ internal class KotlinLiteralValueConverter
             UByte::class
         ).forEach { uType -> registerConvertor(uType) { CodeBlock.of("%Lu", it) } }*/
 
-        registerConvertor(Float::class) { CodeBlock.of("%Lf", it) }
+        registerConvertor(Float::class) {
+            if (it.isNaN())
+                CodeBlock.of("Float.NaN")
+            else
+                when (it) {
+                    Float.POSITIVE_INFINITY -> CodeBlock.of("Float.POSITIVE_INFINITY")
+                    Float.NEGATIVE_INFINITY -> CodeBlock.of("Float.NEGATIVE_INFINITY")
+                    else -> CodeBlock.of("%Lf", it)
+                }
+        }
+        registerConvertor(Double::class) {
+            if (it.isNaN())
+                CodeBlock.of("Double.NaN")
+            else
+                when (it) {
+                    Double.POSITIVE_INFINITY -> CodeBlock.of("Double.POSITIVE_INFINITY")
+                    Double.NEGATIVE_INFINITY -> CodeBlock.of("Double.NEGATIVE_INFINITY")
+                    else -> CodeBlock.of("%L", it.toString())
+                }
+        }
         registerConvertor(Long::class) { CodeBlock.of("%LL", it) }
     }
 
