@@ -129,7 +129,8 @@ internal class KotlinLiteralValueConverter
             if (it.isNaN())
                 CodeBlock.of("Float.NaN")
             else
-                when (it) {
+                when (it) 
+                {
                     Float.POSITIVE_INFINITY -> CodeBlock.of("Float.POSITIVE_INFINITY")
                     Float.NEGATIVE_INFINITY -> CodeBlock.of("Float.NEGATIVE_INFINITY")
                     else -> CodeBlock.of("%Lf", it)
@@ -139,7 +140,8 @@ internal class KotlinLiteralValueConverter
             if (it.isNaN())
                 CodeBlock.of("Double.NaN")
             else
-                when (it) {
+                when (it) 
+                {
                     Double.POSITIVE_INFINITY -> CodeBlock.of("Double.POSITIVE_INFINITY")
                     Double.NEGATIVE_INFINITY -> CodeBlock.of("Double.NEGATIVE_INFINITY")
                     else -> CodeBlock.of("%L", it.toString())
