@@ -3,8 +3,6 @@ package io.github.tomhula.buildmark
 import com.squareup.kotlinpoet.CodeBlock
 import io.github.tomhula.buildmark.KotlinLiteralValueConverter
 import org.junit.jupiter.api.Test
-import java.nio.charset.Charset
-import kotlin.random.Random
 import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.api.ScriptEvaluationConfiguration
@@ -36,187 +34,321 @@ class KotlinLiteralValueConverterTest
     @Test
     fun testInt()
     {
-        assertValueEqualsEvaluated(Random.nextInt())
+        listOf(Int.MIN_VALUE, -1, 0, 1, Int.MAX_VALUE).forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testByte()
     {
-        val randomByte = Random.nextInt().toByte()
-        val evaluated = evaluateValue(randomByte)
-        assertEquals(randomByte.toInt(), evaluated)
+        listOf(Byte.MIN_VALUE, (-1).toByte(), 0.toByte(), 1.toByte(), Byte.MAX_VALUE).forEach {
+            val evaluated = evaluateValue(it)
+            assertEquals(it.toInt(), evaluated)
+        }
     }
 
     @Test
     fun testShort()
     {
-        val randomShort = Random.nextInt().toShort()
-        val evaluated = evaluateValue(randomShort)
-        assertEquals(randomShort.toInt(), evaluated)
+        listOf(Short.MIN_VALUE, (-1).toShort(), 0.toShort(), 1.toShort(), Short.MAX_VALUE).forEach {
+            val evaluated = evaluateValue(it)
+            assertEquals(it.toInt(), evaluated)
+        }
     }
 
     @Test
     fun testLong()
     {
-        assertValueEqualsEvaluated(Random.nextLong())
+        listOf(Long.MIN_VALUE, -1L, 0L, 1L, Long.MAX_VALUE).forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testDouble()
     {
-        assertValueEqualsEvaluated(Random.nextDouble())
+        listOf(
+            Double.MIN_VALUE,
+            -1.0,
+            -0.0,
+            0.0,
+            1.0,
+            Double.MAX_VALUE,
+            Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY,
+            Double.NaN
+        ).forEach {
+            val code = converter.convert(it)
+            // Use fully qualified names for NaN and Infinity to avoid unresolved reference in script
+            val fixedCode = code
+                .replace("Double.NaN", "kotlin.Double.NaN")
+                .replace("Double.POSITIVE_INFINITY", "kotlin.Double.POSITIVE_INFINITY")
+                .replace("Double.NEGATIVE_INFINITY", "kotlin.Double.NEGATIVE_INFINITY")
+            
+            val evaluated = eval(fixedCode) as Double
+            if (it.isNaN()) {
+                assert(evaluated.isNaN())
+            } else {
+                assertEquals(it, evaluated)
+            }
+        }
     }
 
     @Test
     fun testBoolean()
     {
-        assertValueEqualsEvaluated(Random.nextBoolean())
+        listOf(true, false).forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testString()
     {
-        val randomString = String(Random.nextBytes(20), Charset.forName("UTF-8"))
-        assertValueEqualsEvaluated(randomString)
+        listOf(
+            "",
+            " ",
+            "Hello World",
+            "String with \"quotes\"",
+            "String with \n newline",
+            "String with \t tab",
+            "String with $ dollar",
+            "String with \${expression}",
+            "Special characters: !@#$%^&*()_+=-`~[]\\{}|;':\",./<>?"
+        ).forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testChar()
     {
-        val randomChar = Random.nextInt().toChar()
-        assertValueEqualsEvaluated(randomChar)
+        listOf(' ', 'a', 'A', '0', '\n', '\t', '\'', '\"', '\\', '$', '\u1234').forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testFloat()
     {
-        val randomFloat = Random.nextFloat()
-        assertValueEqualsEvaluated(randomFloat)
+        listOf(
+            Float.MIN_VALUE,
+            -1.0f,
+            -0.0f,
+            0.0f,
+            1.0f,
+            Float.MAX_VALUE,
+            Float.POSITIVE_INFINITY,
+            Float.NEGATIVE_INFINITY,
+            Float.NaN
+        ).forEach {
+            val code = converter.convert(it)
+            // Use fully qualified names for NaN and Infinity to avoid unresolved reference in script
+            val fixedCode = code
+                .replace("Float.NaN", "kotlin.Float.NaN")
+                .replace("Float.POSITIVE_INFINITY", "kotlin.Float.POSITIVE_INFINITY")
+                .replace("Float.NEGATIVE_INFINITY", "kotlin.Float.NEGATIVE_INFINITY")
+
+            val evaluated = eval(fixedCode) as Float
+            if (it.isNaN()) {
+                assert(evaluated.isNaN())
+            } else {
+                assertEquals(it, evaluated)
+            }
+        }
     }
 
     @Test
     fun testList()
     {
-        val randomList = List(Random.nextInt(10, 20)) { Random.nextInt() }
-        assertValueEqualsEvaluated(randomList)
-
-        val mixedList = listOf(1, "Hello", 2.5f, true)
-        assertValueEqualsEvaluated(mixedList)
+        val testLists = listOf(
+            emptyList<Int>(),
+            listOf(1, 2, 3),
+            listOf(null, 1, "mixed", true),
+            listOf(listOf(1, 2), listOf(3, 4))
+        )
+        testLists.forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testSet()
     {
-        val randomSet = (1..Random.nextInt(5, 10)).map { Random.nextInt() }.toSet()
-        assertValueEqualsEvaluated(randomSet)
-
-        val mixedSet = setOf(1, "Hello", 2.5f, true)
-        assertValueEqualsEvaluated(mixedSet)
+        val testSets = listOf(
+            emptySet<Int>(),
+            setOf(1, 2, 3),
+            setOf(null, 1, "mixed", true),
+            setOf(setOf(1, 2), setOf(3, 4))
+        )
+        testSets.forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testMap()
     {
-        val randomMap = (1..Random.nextInt(5, 10)).associate { it to Random.nextInt() }
-        assertValueEqualsEvaluated(randomMap)
-
-        val mixedMap = mapOf(1 to "One", "Two" to 2, 3.5f to true)
-        assertValueEqualsEvaluated(mixedMap)
+        val testMaps = listOf(
+            emptyMap<String, Int>(),
+            mapOf("one" to 1, "two" to 2),
+            mapOf(null to "nullKey", "nullValue" to null, 1 to true),
+            mapOf("nested" to mapOf("inner" to 42))
+        )
+        testMaps.forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
     fun testPair()
     {
-        val randomPair = Random.nextInt() to Random.nextDouble()
-        assertValueEqualsEvaluated(randomPair)
-
-        val mixedPair = "Hello" to 42
-        assertValueEqualsEvaluated(mixedPair)
+        val testPairs = listOf(
+            1 to 2,
+            "hello" to null,
+            null to 3.14,
+            (1 to 2) to (3 to 4)
+        )
+        testPairs.forEach {
+            assertValueEqualsEvaluated(it)
+        }
     }
 
     @Test
-    @Suppress("UNCHECKED_CAST")
     fun testArray()
     {
-        val randomArray = Array(Random.nextInt(5, 10)) { Random.nextInt() }
-        val randomArrayEvaluated = evaluateValue(randomArray)
-        assertContentEquals(randomArray, randomArrayEvaluated as Array<Int>)
+        val array1 = arrayOf(1, 2, 3)
+        assertContentEquals(array1, evaluateValue(array1) as Array<Int>)
 
-        val mixedArray: Array<Any?> = arrayOf(1, "Hello", 2.5f, true, null)
-        val mixedArrayEvaluated = evaluateValue(mixedArray)
-        assertContentEquals(mixedArray, mixedArrayEvaluated as Array<Any?>)
+        val array2: Array<Any?> = arrayOf(1, "mixed", null, true)
+        assertContentEquals(array2, evaluateValue(array2) as Array<Any?>)
+
+        val array3 = emptyArray<Int>()
+        assertContentEquals(array3, evaluateValue(array3) as Array<Int>)
+
+        val array4 = arrayOf(arrayOf(1, 2), arrayOf(3, 4))
+        val evaluated4 = evaluateValue(array4) as Array<Array<Int>>
+        assertEquals(array4.size, evaluated4.size)
+        for (i in array4.indices) {
+            assertContentEquals(array4[i], evaluated4[i])
+        }
+
+        val array5 = arrayOf<Int?>(1, null, 3)
+        assertContentEquals(array5, evaluateValue(array5) as Array<Int?>)
     }
 
     @Test
     fun testIntArray()
     {
-        val randomIntArray = IntArray(Random.nextInt(5, 10)) { Random.nextInt() }
-        val randomIntArrayEvaluated = evaluateValue(randomIntArray)
-        assertContentEquals(randomIntArray, randomIntArrayEvaluated as IntArray)
+        listOf(
+            intArrayOf(),
+            intArrayOf(Int.MIN_VALUE, -1, 0, 1, Int.MAX_VALUE)
+        ).forEach {
+            val evaluated = evaluateValue(it) as IntArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testByteArray()
     {
-        val randomByteArray = ByteArray(Random.nextInt(5, 10)) { Random.nextInt().toByte() }
-        val randomByteArrayEvaluated = evaluateValue(randomByteArray)
-        assertContentEquals(randomByteArray, randomByteArrayEvaluated as ByteArray)
+        listOf(
+            byteArrayOf(),
+            byteArrayOf(Byte.MIN_VALUE, -1, 0, 1, Byte.MAX_VALUE)
+        ).forEach {
+            val evaluated = evaluateValue(it) as ByteArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testShortArray()
     {
-        val randomShortArray = ShortArray(Random.nextInt(5, 10)) { Random.nextInt().toShort() }
-        val randomShortArrayEvaluated = evaluateValue(randomShortArray)
-        assertContentEquals(randomShortArray, randomShortArrayEvaluated as ShortArray)
+        listOf(
+            shortArrayOf(),
+            shortArrayOf(Short.MIN_VALUE, -1, 0, 1, Short.MAX_VALUE)
+        ).forEach {
+            val evaluated = evaluateValue(it) as ShortArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testLongArray()
     {
-        val randomLongArray = LongArray(Random.nextInt(5, 10)) { Random.nextLong() }
-        val randomLongArrayEvaluated = evaluateValue(randomLongArray)
-        assertContentEquals(randomLongArray, randomLongArrayEvaluated as LongArray)
+        listOf(
+            longArrayOf(),
+            longArrayOf(Long.MIN_VALUE, -1L, 0L, 1L, Long.MAX_VALUE)
+        ).forEach {
+            val evaluated = evaluateValue(it) as LongArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testFloatArray()
     {
-        val randomFloatArray = FloatArray(Random.nextInt(5, 10)) { Random.nextFloat() }
-        val randomFloatArrayEvaluated = evaluateValue(randomFloatArray)
-        assertContentEquals(randomFloatArray, randomFloatArrayEvaluated as FloatArray)
+        listOf(
+            floatArrayOf(),
+            floatArrayOf(Float.MIN_VALUE, -1.0f, 0.0f, Float.MAX_VALUE, Float.NaN)
+        ).forEach {
+            val code = converter.convert(it)
+            val fixedCode = code
+                .replace("Float.NaN", "kotlin.Float.NaN")
+                .replace("Float.POSITIVE_INFINITY", "kotlin.Float.POSITIVE_INFINITY")
+                .replace("Float.NEGATIVE_INFINITY", "kotlin.Float.NEGATIVE_INFINITY")
+            val evaluated = eval(fixedCode) as FloatArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testDoubleArray()
     {
-        val randomDoubleArray = DoubleArray(Random.nextInt(5, 10)) { Random.nextDouble() }
-        val randomDoubleArrayEvaluated = evaluateValue(randomDoubleArray)
-        assertContentEquals(randomDoubleArray, randomDoubleArrayEvaluated as DoubleArray)
+        listOf(
+            doubleArrayOf(),
+            doubleArrayOf(Double.MIN_VALUE, -1.0, 0.0, Double.MAX_VALUE, Double.NaN)
+        ).forEach {
+            val code = converter.convert(it)
+            val fixedCode = code
+                .replace("Double.NaN", "kotlin.Double.NaN")
+                .replace("Double.POSITIVE_INFINITY", "kotlin.Double.POSITIVE_INFINITY")
+                .replace("Double.NEGATIVE_INFINITY", "kotlin.Double.NEGATIVE_INFINITY")
+            val evaluated = eval(fixedCode) as DoubleArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testBooleanArray()
     {
-        val randomBooleanArray = BooleanArray(Random.nextInt(5, 10)) { Random.nextBoolean() }
-        val randomBooleanArrayEvaluated = evaluateValue(randomBooleanArray)
-        assertContentEquals(randomBooleanArray, randomBooleanArrayEvaluated as BooleanArray)
+        listOf(
+            booleanArrayOf(),
+            booleanArrayOf(true, false, true)
+        ).forEach {
+            val evaluated = evaluateValue(it) as BooleanArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testCharArray()
     {
-        val randomCharArray = CharArray(Random.nextInt(5, 10)) { Random.nextInt().toChar() }
-        val randomCharArrayEvaluated = evaluateValue(randomCharArray)
-        assertContentEquals(randomCharArray, randomCharArrayEvaluated as CharArray)
+        listOf(
+            charArrayOf(),
+            charArrayOf(' ', 'a', '\n', '\'', '\"', '\\', '$')
+        ).forEach {
+            val evaluated = evaluateValue(it) as CharArray
+            assertContentEquals(it, evaluated)
+        }
     }
 
     @Test
     fun testUnsupportedType()
     {
         assertFailsWith<IllegalArgumentException> {
-            assertValueEqualsEvaluated(object
-            {})
+            converter.convert(object {})
         }
     }
 
@@ -235,7 +367,7 @@ class KotlinLiteralValueConverterTest
     private fun generateCodeEvaluatingToValue(value: Any?): String
     {
         val valueLiteral = converter.convert(value)
-        val valueLiteralEvaluationCode = if (value != null)
+        return if (value != null)
             valueLiteral
         else
         // BUG: `null` evaluates to Unit for some reason. However a nullable variable correctly evaluates to null. 
@@ -243,14 +375,14 @@ class KotlinLiteralValueConverterTest
                 .addStatement("val value: Any? = null")
                 .addStatement("value")
                 .build().toString()
-
-        return valueLiteralEvaluationCode
     }
 
     private fun eval(kotlinCode: String): Any?
     {
+        // Add some imports that might be needed
+        val finalCode = "import kotlin.math.*\n$kotlinCode"
         val evaluationResult = scriptHost.eval(
-            kotlinCode.toScriptSource(),
+            finalCode.toScriptSource(),
             scriptCompilationConfiguration,
             scriptEvaluationConfiguration
         ).valueOrThrow()
