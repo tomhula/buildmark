@@ -39,16 +39,18 @@ internal class KotlinLiteralValueConverter
      * ```
      * @throws IllegalArgumentException for [value] of unsupported type.
      */
-    fun convert(value: Any?): String
+    fun convert(value: Any?): String = convertToCodeBlock(value).toString()
+
+    private fun convertToCodeBlock(value: Any?): CodeBlock
     {
         if (value == null)
-            return "null"
+            return CodeBlock.of("null")
 
         val type = value::class
 
         val converter = convertors.entries.find { it.key(type) }?.value
 
-        return converter?.invoke(value)?.toString()
+        return converter?.invoke(value)
             ?: throw IllegalArgumentException("Unsupported type: ${value::class}")
     }
 
