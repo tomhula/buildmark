@@ -1,6 +1,7 @@
 package io.github.tomhula.buildmark
 
 import com.squareup.kotlinpoet.CodeBlock
+import kotlin.code
 import kotlin.collections.joinToString
 import kotlin.collections.map
 import kotlin.reflect.KClass
@@ -61,7 +62,30 @@ internal class KotlinLiteralValueConverter
         registerArrayConverters()
 
         registerConvertor(String::class) { CodeBlock.of("%S", it) }
-        registerConvertor(Char::class) { CodeBlock.of("'%L'", it) }
+        registerConvertor(Char::class) {
+            val literal = when (it)
+            {
+                '\b' -> "\\b"
+                '\t' -> "\\t"
+                '\n' -> "\\n"
+                '\r' -> "\\r"
+                '\u000C' -> "\\f"
+                '\'' -> "\\'"
+                '\"' -> "\""
+                '\\' -> "\\\\"
+                else ->
+                {
+                    val isPrintableAscii = it.code in 32..126
+                    
+                    if (isPrintableAscii)
+                        it.toString()
+                    else
+                        "\\u%04X".format(it.code)
+                }
+            }
+            
+            CodeBlock.of("'%L'", literal)
+        }
         registerConvertor(Pair::class) { CodeBlock.of("%L to %L", convert(it.first), convert(it.second)) }
     }
 
