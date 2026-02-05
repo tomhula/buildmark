@@ -161,7 +161,7 @@ internal class KotlinLiteralValueConverter
             CodeBlock.of("booleanArrayOf(%L)", elements)
         }
         registerConvertor(CharArray::class) { array ->
-            val elements = array.joinToString(", ") { "'$it'" }
+            val elements = array.joinToString(", ", transform = ::convert)
             CodeBlock.of("charArrayOf(%L)", elements)
         }
     }
