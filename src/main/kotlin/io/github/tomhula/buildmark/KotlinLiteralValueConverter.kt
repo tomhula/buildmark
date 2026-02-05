@@ -127,42 +127,33 @@ internal class KotlinLiteralValueConverter
     private fun registerArrayConverters()
     {
         registerConvertor<Array<*>>({ it.qualifiedName == "kotlin.Array" || it.java == Array::class.java }) { array ->
-            val elements = array.map { convert(it) }
-            CodeBlock.of("arrayOf(%L)", elements.joinToString(", "))
+            CodeBlock.of("arrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
 
         // Primitive array converters
         registerConvertor(IntArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("intArrayOf(%L)", elements)
+            CodeBlock.of("intArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(ByteArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("byteArrayOf(%L)", elements)
+            CodeBlock.of("byteArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(ShortArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("shortArrayOf(%L)", elements)
+            CodeBlock.of("shortArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(LongArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("longArrayOf(%L)", elements)
+            CodeBlock.of("longArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(FloatArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("floatArrayOf(%L)", elements)
+            CodeBlock.of("floatArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(DoubleArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("doubleArrayOf(%L)", elements)
+            CodeBlock.of("doubleArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(BooleanArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("booleanArrayOf(%L)", elements)
+            CodeBlock.of("booleanArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
         registerConvertor(CharArray::class) { array ->
-            val elements = array.joinToString(", ", transform = ::convert)
-            CodeBlock.of("charArrayOf(%L)", elements)
+            CodeBlock.of("charArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
     }
 
