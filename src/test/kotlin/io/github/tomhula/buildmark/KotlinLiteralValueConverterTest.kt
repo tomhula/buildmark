@@ -69,29 +69,14 @@ class KotlinLiteralValueConverterTest
     fun testDouble()
     {
         listOf(
+            -1.0, -0.0, 0.0, 1.0,
             Double.MIN_VALUE,
-            -1.0,
-            -0.0,
-            0.0,
-            1.0,
             Double.MAX_VALUE,
             Double.POSITIVE_INFINITY,
             Double.NEGATIVE_INFINITY,
             Double.NaN
         ).forEach {
-            val code = converter.convert(it)
-            // Use fully qualified names for NaN and Infinity to avoid unresolved reference in script
-            val fixedCode = code
-                .replace("Double.NaN", "kotlin.Double.NaN")
-                .replace("Double.POSITIVE_INFINITY", "kotlin.Double.POSITIVE_INFINITY")
-                .replace("Double.NEGATIVE_INFINITY", "kotlin.Double.NEGATIVE_INFINITY")
-            
-            val evaluated = eval(fixedCode) as Double
-            if (it.isNaN()) {
-                assert(evaluated.isNaN())
-            } else {
-                assertEquals(it, evaluated)
-            }
+            assertValueEqualsEvaluated(it)
         }
     }
 
@@ -134,28 +119,13 @@ class KotlinLiteralValueConverterTest
     {
         listOf(
             Float.MIN_VALUE,
-            -1.0f,
-            -0.0f,
-            0.0f,
-            1.0f,
+            -1.0f, -0.0f, 0.0f, 1.0f,
             Float.MAX_VALUE,
             Float.POSITIVE_INFINITY,
             Float.NEGATIVE_INFINITY,
             Float.NaN
         ).forEach {
-            val code = converter.convert(it)
-            // Use fully qualified names for NaN and Infinity to avoid unresolved reference in script
-            val fixedCode = code
-                .replace("Float.NaN", "kotlin.Float.NaN")
-                .replace("Float.POSITIVE_INFINITY", "kotlin.Float.POSITIVE_INFINITY")
-                .replace("Float.NEGATIVE_INFINITY", "kotlin.Float.NEGATIVE_INFINITY")
-
-            val evaluated = eval(fixedCode) as Float
-            if (it.isNaN()) {
-                assert(evaluated.isNaN())
-            } else {
-                assertEquals(it, evaluated)
-            }
+            assertValueEqualsEvaluated(it)
         }
     }
 
@@ -165,7 +135,7 @@ class KotlinLiteralValueConverterTest
         assertThrows<IllegalArgumentException> {
             evaluateValue(emptyList<Int>())
         }
-        
+
         val testLists = listOf(
             listOf(1, 2, 3),
             listOf(null, 1, "mixed", true),
@@ -182,7 +152,7 @@ class KotlinLiteralValueConverterTest
         assertThrows<IllegalArgumentException> {
             evaluateValue(emptySet<Int>())
         }
-        
+
         val testSets = listOf(
             setOf(1, 2, 3),
             setOf(null, 1, "mixed", true),
@@ -199,7 +169,7 @@ class KotlinLiteralValueConverterTest
         assertThrows<IllegalArgumentException> {
             evaluateValue(emptyMap<Int, Int>())
         }
-        
+
         val testMaps = listOf(
             mapOf("one" to 1, "two" to 2),
             mapOf(null to "nullKey", "nullValue" to null, 1 to true),
@@ -240,9 +210,8 @@ class KotlinLiteralValueConverterTest
         val array4 = arrayOf(arrayOf(1, 2), arrayOf(3, 4))
         val evaluated4 = evaluateValue(array4) as Array<Array<Int>>
         assertEquals(array4.size, evaluated4.size)
-        for (i in array4.indices) {
+        for (i in array4.indices)
             assertContentEquals(array4[i], evaluated4[i])
-        }
 
         val array5 = arrayOf<Int?>(1, null, 3)
         assertContentEquals(array5, evaluateValue(array5) as Array<Int?>)
@@ -303,12 +272,7 @@ class KotlinLiteralValueConverterTest
             floatArrayOf(),
             floatArrayOf(Float.MIN_VALUE, -1.0f, 0.0f, Float.MAX_VALUE, Float.NaN)
         ).forEach {
-            val code = converter.convert(it)
-            val fixedCode = code
-                .replace("Float.NaN", "kotlin.Float.NaN")
-                .replace("Float.POSITIVE_INFINITY", "kotlin.Float.POSITIVE_INFINITY")
-                .replace("Float.NEGATIVE_INFINITY", "kotlin.Float.NEGATIVE_INFINITY")
-            val evaluated = eval(fixedCode) as FloatArray
+            val evaluated = evaluateValue(it) as FloatArray
             assertContentEquals(it, evaluated)
         }
     }
@@ -320,12 +284,7 @@ class KotlinLiteralValueConverterTest
             doubleArrayOf(),
             doubleArrayOf(Double.MIN_VALUE, -1.0, 0.0, Double.MAX_VALUE, Double.NaN)
         ).forEach {
-            val code = converter.convert(it)
-            val fixedCode = code
-                .replace("Double.NaN", "kotlin.Double.NaN")
-                .replace("Double.POSITIVE_INFINITY", "kotlin.Double.POSITIVE_INFINITY")
-                .replace("Double.NEGATIVE_INFINITY", "kotlin.Double.NEGATIVE_INFINITY")
-            val evaluated = eval(fixedCode) as DoubleArray
+            val evaluated = evaluateValue(it) as DoubleArray
             assertContentEquals(it, evaluated)
         }
     }
@@ -380,7 +339,7 @@ class KotlinLiteralValueConverterTest
         return if (value != null)
             valueLiteral
         else
-        // BUG: `null` evaluates to Unit for some reason. However a nullable variable correctly evaluates to null. 
+        // `null` evaluates to Unit for some reason. However, a nullable variable correctly evaluates to null. 
             CodeBlock.builder()
                 .addStatement("val value: Any? = null")
                 .addStatement("value")
@@ -397,9 +356,7 @@ class KotlinLiteralValueConverterTest
             scriptEvaluationConfiguration
         ).valueOrThrow()
 
-        val returnValue = evaluationResult.returnValue
-
-        return when (returnValue)
+        return when (val returnValue = evaluationResult.returnValue)
         {
             is ResultValue.Value -> returnValue.value
             is ResultValue.Unit -> Unit
