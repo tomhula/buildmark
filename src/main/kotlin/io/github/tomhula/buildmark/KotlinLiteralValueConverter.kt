@@ -92,12 +92,18 @@ internal class KotlinLiteralValueConverter
     private fun registerCollectionConverters()
     {
         registerConvertor(List::class) { list ->
+            if (list.isEmpty())
+                throw IllegalArgumentException("Empty lists are not supported")
             CodeBlock.of("listOf(%L)", list.toConvertedArgumentList())
         }
         registerConvertor(Set::class) { set ->
+            if (set.isEmpty())
+                throw IllegalArgumentException("Empty sets are not supported")
             CodeBlock.of("setOf(%L)", set.toConvertedArgumentList())
         }
         registerConvertor(Map::class) { map ->
+            if (map.isEmpty())
+                throw IllegalArgumentException("Empty maps are not supported")
             val entries = map.entries.map { "${convert(it.key)} to ${convert(it.value)}" }
             CodeBlock.of("mapOf(%L)", entries.joinToString(", "))
         }
@@ -160,6 +166,8 @@ internal class KotlinLiteralValueConverter
     private fun registerArrayConverters()
     {
         registerConvertor<Array<*>>({ it.qualifiedName == "kotlin.Array" || it.java == Array::class.java }) { array ->
+            if (array.isEmpty())
+                throw IllegalArgumentException("Empty arrays are not supported")
             CodeBlock.of("arrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
 

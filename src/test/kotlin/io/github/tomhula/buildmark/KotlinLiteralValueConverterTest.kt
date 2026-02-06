@@ -1,8 +1,8 @@
 package io.github.tomhula.buildmark
 
 import com.squareup.kotlinpoet.CodeBlock
-import io.github.tomhula.buildmark.KotlinLiteralValueConverter
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.api.ScriptEvaluationConfiguration
@@ -162,8 +162,11 @@ class KotlinLiteralValueConverterTest
     @Test
     fun testList()
     {
+        assertThrows<IllegalArgumentException> {
+            evaluateValue(emptyList<Int>())
+        }
+        
         val testLists = listOf(
-            emptyList<Int>(),
             listOf(1, 2, 3),
             listOf(null, 1, "mixed", true),
             listOf(listOf(1, 2), listOf(3, 4))
@@ -176,8 +179,11 @@ class KotlinLiteralValueConverterTest
     @Test
     fun testSet()
     {
+        assertThrows<IllegalArgumentException> {
+            evaluateValue(emptySet<Int>())
+        }
+        
         val testSets = listOf(
-            emptySet<Int>(),
             setOf(1, 2, 3),
             setOf(null, 1, "mixed", true),
             setOf(setOf(1, 2), setOf(3, 4))
@@ -190,8 +196,11 @@ class KotlinLiteralValueConverterTest
     @Test
     fun testMap()
     {
+        assertThrows<IllegalArgumentException> {
+            evaluateValue(emptyMap<Int, Int>())
+        }
+        
         val testMaps = listOf(
-            emptyMap<String, Int>(),
             mapOf("one" to 1, "two" to 2),
             mapOf(null to "nullKey", "nullValue" to null, 1 to true),
             mapOf("nested" to mapOf("inner" to 42))
@@ -224,8 +233,9 @@ class KotlinLiteralValueConverterTest
         val array2: Array<Any?> = arrayOf(1, "mixed", null, true)
         assertContentEquals(array2, evaluateValue(array2) as Array<Any?>)
 
-        val array3 = emptyArray<Int>()
-        assertContentEquals(array3, evaluateValue(array3) as Array<Int>)
+        assertThrows<IllegalArgumentException> {
+            evaluateValue(emptyArray<Int>())
+        }
 
         val array4 = arrayOf(arrayOf(1, 2), arrayOf(3, 4))
         val evaluated4 = evaluateValue(array4) as Array<Array<Int>>
