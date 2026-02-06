@@ -16,11 +16,14 @@ internal class KotlinLiteralValueConverter
     private val convertors = mutableMapOf<(KClass<*>) -> Boolean, (Any) -> CodeBlock>()
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> registerConvertor(predicate: (KClass<T>) -> Boolean, convertor: (T) -> CodeBlock) =
+    private fun <T : Any> registerConvertor(predicate: (KClass<T>) -> Boolean, convertor: (T) -> CodeBlock)
+    {
         convertors.put(
             predicate as (KClass<*>) -> Boolean,
             convertor as (Any) -> CodeBlock
         )
+    }
+        
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any> registerConvertor(clazz: KClass<T>, convertor: (T) -> CodeBlock) =
@@ -60,33 +63,9 @@ internal class KotlinLiteralValueConverter
         registerNumberConverters()
         registerCollectionConverters()
         registerArrayConverters()
-
+        registerCharConverter()
         registerConvertor(String::class) { CodeBlock.of("%S", it) }
-        registerConvertor(Char::class) {
-            val literal = when (it)
-            {
-                '\b' -> "\\b"
-                '\t' -> "\\t"
-                '\n' -> "\\n"
-                '\r' -> "\\r"
-                '\u000C' -> "\\f"
-                '\'' -> "\\'"
-                '\"' -> "\""
-                '\\' -> "\\\\"
-                else ->
-                {
-                    val isPrintableAscii = it.code in 32..126
-                    
-                    if (isPrintableAscii)
-                        it.toString()
-                    else
-                        "\\u%04X".format(it.code)
-                }
-            }
-            
-            CodeBlock.of("'%L'", literal)
-        }
-        registerConvertor(Pair::class) { CodeBlock.of("(%L) to (%L)", convert(it.first), convert(it.second)) }
+        registerConvertor(Pair::class) { CodeBlock.of("(%L) to (%L)", convertToCodeBlock(it.first), convertToCodeBlock(it.second)) }
     }
 
     private fun registerCollectionConverters()
@@ -131,38 +110,47 @@ internal class KotlinLiteralValueConverter
             UByte::class
         ).forEach { uType -> registerConvertor(uType) { CodeBlock.of("%Lu", it) } }*/
 
-        registerConvertor(Float::class) {
-            if (it.isNaN())
-                CodeBlock.of("Float.NaN")
-            else
-                when (it) 
-                {
-                    Float.POSITIVE_INFINITY -> CodeBlock.of("Float.POSITIVE_INFINITY")
-                    Float.NEGATIVE_INFINITY -> CodeBlock.of("Float.NEGATIVE_INFINITY")
-                    else -> CodeBlock.of("%Lf", it)
-                }
-        }
+        registerFloatConverter()
+        registerDoubleConvertor()
+        registerLongConvertor()
+    }
+
+    private fun registerFloatConverter() = registerConvertor(Float::class) {
+        if (it.isNaN())
+            CodeBlock.of("Float.NaN")
+        else
+            when (it)
+            {
+                Float.POSITIVE_INFINITY -> CodeBlock.of("Float.POSITIVE_INFINITY")
+                Float.NEGATIVE_INFINITY -> CodeBlock.of("Float.NEGATIVE_INFINITY")
+                else -> CodeBlock.of("%Lf", it)
+            }
+    }
+    
+    private fun registerDoubleConvertor()
+    {
         registerConvertor(Double::class) {
             if (it.isNaN())
                 CodeBlock.of("Double.NaN")
             else
-                when (it) 
+                when (it)
                 {
                     Double.POSITIVE_INFINITY -> CodeBlock.of("Double.POSITIVE_INFINITY")
                     Double.NEGATIVE_INFINITY -> CodeBlock.of("Double.NEGATIVE_INFINITY")
                     else -> CodeBlock.of("%L", it.toString())
                 }
         }
-        registerConvertor(Long::class) { 
-            when (it)
-            {
-                Long.MAX_VALUE -> CodeBlock.of("Long.MAX_VALUE")
-                Long.MIN_VALUE -> CodeBlock.of("Long.MIN_VALUE")
-                else -> CodeBlock.of("%LL", it) 
-            }
-        }
     }
 
+    private fun registerLongConvertor() = registerConvertor(Long::class) {
+        when (it)
+        {
+            Long.MAX_VALUE -> CodeBlock.of("Long.MAX_VALUE")
+            Long.MIN_VALUE -> CodeBlock.of("Long.MIN_VALUE")
+            else -> CodeBlock.of("%LL", it)
+        }
+    }
+    
     private fun registerArrayConverters()
     {
         registerConvertor<Array<*>>({ it.qualifiedName == "kotlin.Array" || it.java == Array::class.java }) { array ->
@@ -196,6 +184,31 @@ internal class KotlinLiteralValueConverter
         registerConvertor(CharArray::class) { array ->
             CodeBlock.of("charArrayOf(%L)", array.asIterable().toConvertedArgumentList())
         }
+    }
+
+    private fun registerCharConverter() = registerConvertor(Char::class) {
+        val literal = when (it)
+        {
+            '\b' -> "\\b"
+            '\t' -> "\\t"
+            '\n' -> "\\n"
+            '\r' -> "\\r"
+            '\u000C' -> "\\f"
+            '\'' -> "\\'"
+            '\"' -> "\""
+            '\\' -> "\\\\"
+            else ->
+            {
+                val isPrintableAscii = it.code in 32..126
+
+                if (isPrintableAscii)
+                    it.toString()
+                else
+                    "\\u%04X".format(it.code)
+            }
+        }
+
+        CodeBlock.of("'%L'", literal)
     }
 
     /** Converts a collection of a comma separated string of a result of [convert] on each element. */
