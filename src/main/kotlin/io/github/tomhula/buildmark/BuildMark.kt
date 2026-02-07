@@ -2,25 +2,29 @@ package io.github.tomhula.buildmark
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.Directory
-import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 class BuildMark : Plugin<Project>
 {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     override fun apply(project: Project)
     {
         val outputDirectory = project.layout.buildDirectory.dir(OUTPUT_DIR)
 
         val extension = project.extensions.create<BuildMarkExtension>("buildMark")
+        extension.configureConventions(project)
 
-        configureExtensionConventions(extension, project)
-        addBuildMarkToSourceSets(extension.kotlinSourceSets.get(), outputDirectory)
+        project.plugins.withType<KotlinBasePlugin> {
+            project.kotlinExtension.sourceSets.matching { it.name in extension.sourceSets.get() }.configureEach {
+                kotlin.srcDir(outputDirectory)
+            }
+        }
 
         val generateTask = project.tasks.register<GenerateBuildMarkTask>("generateBuildMark") {
             group = "build"
@@ -42,25 +46,13 @@ class BuildMark : Plugin<Project>
         }
     }
 
-    private fun configureExtensionConventions(
-        extension: BuildMarkExtension, 
-        project: Project
-    )
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    private fun BuildMarkExtension.configureConventions(project: Project)
     {
-        extension.targetPackage.convention("")
-        extension.targetObjectName.convention("BuildMark")
-        project.kotlinExtension.sourceSets.firstOrNull()?.let { firstKotlinSourceSet ->
-            extension.kotlinSourceSets.convention(listOf(firstKotlinSourceSet))
-        }
-        extension.options.convention(mapOf("VERSION" to project.version.toString()))
-    }
-
-    private fun addBuildMarkToSourceSets(
-        sourceSets: List<KotlinSourceSet>,
-        outputDirectory: Provider<Directory>
-    )
-    {
-        sourceSets.forEach { it.kotlin.srcDir(outputDirectory) }
+        targetPackage.convention("")
+        targetObjectName.convention("BuildMark")
+        options.convention(mapOf("VERSION" to project.version.toString()))
+        sourceSets.convention(setOf("main", "commonMain"))
     }
 
     companion object

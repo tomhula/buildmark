@@ -1,14 +1,13 @@
 package io.github.tomhula.buildmark
 
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.gradle.api.provider.SetProperty
 
 interface BuildMarkExtension
 {
     val targetPackage: Property<String>
     val targetObjectName: Property<String>
-    val kotlinSourceSets: ListProperty<KotlinSourceSet>
+    val sourceSets: SetProperty<String>
     val options: MapProperty<String, Any>
 }
