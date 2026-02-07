@@ -15,21 +15,19 @@ class BuildMark : Plugin<Project>
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     override fun apply(project: Project)
     {
-        val outputDirectory = project.layout.buildDirectory.dir(OUTPUT_DIR)
-
         val extension = project.extensions.create<BuildMarkExtension>("buildMark")
         extension.configureConventions(project)
 
         project.plugins.withType<KotlinBasePlugin> {
             project.kotlinExtension.sourceSets.matching { it.name in extension.sourceSets.get() }.configureEach {
-                kotlin.srcDir(outputDirectory)
+                kotlin.srcDir(extension.outputDirectory)
             }
         }
 
         val generateTask = project.tasks.register<GenerateBuildMarkTask>("generateBuildMark") {
             group = "build"
             description = "Generates the build mark object"
-            this.outputDirectory.set(outputDirectory)
+            this.outputDirectory.set(extension.outputDirectory)
             targetObjectName.set(extension.targetObjectName)
             targetPackage.set(extension.targetPackage)
             options.set(extension.options)
@@ -49,15 +47,10 @@ class BuildMark : Plugin<Project>
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     private fun BuildMarkExtension.configureConventions(project: Project)
     {
+        outputDirectory.convention(project.layout.buildDirectory.dir("generated/buildmark/"))
         targetPackage.convention("")
         targetObjectName.convention("BuildMark")
         options.convention(mapOf("VERSION" to project.version.toString()))
         sourceSets.convention(setOf("main", "commonMain"))
-    }
-
-    companion object
-    {
-        /** Output directory relative to the Gradle build directory. */
-        const val OUTPUT_DIR = "generated/buildmark/"
     }
 }
