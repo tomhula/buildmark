@@ -19,8 +19,11 @@ class BuildMark : Plugin<Project>
         extension.configureConventions(project)
 
         project.plugins.withType<KotlinBasePlugin> {
-            project.kotlinExtension.sourceSets.matching { it.name in extension.sourceSets.get() }.configureEach {
-                kotlin.srcDir(extension.outputDirectory)
+            project.afterEvaluate {
+                // I cannot figure out how to lazily configure only the extension.sourceSets so that the convention sourcesets are not registered if they are overridden
+                project.kotlinExtension.sourceSets.matching { it.name in extension.sourceSets.get() }.configureEach {
+                    kotlin.srcDir(extension.outputDirectory)
+                }
             }
         }
 
@@ -40,9 +43,9 @@ class BuildMark : Plugin<Project>
         
         /* This is so that the sources are available after Gradle sync,
          * so you can reference the generated code and get IDE support before building. */
-        project.afterEvaluate { 
+        /*project.afterEvaluate { 
             generateTask.get().generate()
-        }
+        }*/
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
