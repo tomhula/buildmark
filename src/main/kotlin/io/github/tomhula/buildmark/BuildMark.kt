@@ -27,7 +27,8 @@ class BuildMark : Plugin<Project>
         val generateTask = project.tasks.register<GenerateBuildMarkTask>("generateBuildMark") {
             group = "build"
             description = "Generates the build mark object"
-            this.outputDirectory.set(extension.outputDirectory)
+            
+            outputDirectory.set(extension.outputDirectory)
             targetObjectName.set(extension.targetObjectName)
             targetPackage.set(extension.targetPackage)
             options.set(extension.options)
