@@ -35,6 +35,7 @@ class BuildMark : Plugin<Project>
             project.afterEvaluate {
                 val configuredSourceSets = extension.sourceSets.get()
                 project.kotlinExtension.sourceSets.filter { it.name in configuredSourceSets }.forEach {
+                    // TODO: Use it.generatedKotlin once ite is not experimental
                     it.kotlin.srcDir(extension.outputDirectory)
                 }
             }
