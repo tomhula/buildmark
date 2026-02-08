@@ -1,6 +1,7 @@
 [versions]
 kotlinpoet = "2.1.0"
 kotlin-gradle-plugin = "2.3.10"
+gradle-pluginPublish = "2.0.0"
 
 [libraries]
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
@@ -8,3 +9,6 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 kotlin-scripting-common = { module = "org.jetbrains.kotlin:kotlin-scripting-common" }
 kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
 kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
+
+[plugins]
+gradle-pluginPublish = { id = "com.gradle.plugin-publish", version.ref = "gradle-pluginPublish" }

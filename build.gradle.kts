@@ -1,7 +1,7 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    id("com.gradle.plugin-publish") version "2.0.0"
+    alias(libs.plugins.gradle.pluginPublish)
 }
 
 group = "io.github.tomhula"
