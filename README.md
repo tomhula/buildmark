@@ -43,6 +43,7 @@ buildMark {
 }
 ```
 
+Run the `generateBuildMark` task to generate the sources. The task is automatically run on build. (kotlin compile)
 Once applied and configured, you can access the defined options in your code. (in the configured source-sets)
 
 ```kotlin
