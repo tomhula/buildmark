@@ -11,4 +11,4 @@ kotlin-scripting-jvm = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm" }
 kotlin-scripting-jvm-host = { module = "org.jetbrains.kotlin:kotlin-scripting-jvm-host" }
 
 [plugins]
-gradle-pluginPublish = { id = "com.gradle.plugin-publish", version.ref = "gradle-pluginPublish" }
+gradle-plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-pluginPublish" }
