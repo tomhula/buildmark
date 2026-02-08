@@ -6,19 +6,20 @@
 
 A Gradle plugin that generates a Kotlin object with build information at compile time. This allows you to access build-time properties in your application at runtime.
 
-## Installation
+## Installation and usage
 
-Add the plugin to your build script: ![Gradle Plugin Portal Version](https://img.shields.io/gradle-plugin-portal/v/io.github.tomhula.buildmark?label=version)
 ```kotlin
 plugins {
-    id("io.github.tomhula.buildmark") version "<VERSION>"
+    id("io.github.tomhula.buildmark") version "1.0.3"
 }
 
 buildMark {
     // Package for the generated object (default: root package)
     targetPackage.set("com.example.app")
     // Name of the generated object (default: "BuildMark")
-    targetObjectName.set("AppBuildInfo")
+    targetObjectName.set("BuildMark")
+    // Where to output the code (default: build/generated/buildmark)
+    outputDirectory.set(layout.buildDirectory.dir("generated/buildmark"))
     // The properties to include in the generated object
     options.apply {
         put("VERSION", project.version)
@@ -28,10 +29,9 @@ buildMark {
         put("GIT_COMMIT", "abc123") // You could use a Git plugin to get the actual commit
         put("DEBUG", true)
     }
-
-    // Specify which Kotlin source sets should include the generated code
-    // By default, it's added to the first source set
-    kotlinSourceSets.set(listOf(kotlin.sourceSets.getByName("main")))
+    // Which Kotlin source-sets to add BuildMark to
+    // By default, it's added to commonMain/main source-sets
+    sourceSets.set("jvmMain")
 }
 ```
 
@@ -39,19 +39,19 @@ Once applied and configured, you can access the defined options in your code. (i
 
 ```kotlin
 // This package was configured, default is the root package (no package)
-import com.example.app.AppBuildInfo
+import com.example.app.BuildMark
 
 fun main()
 {
     // AppBuildInfo name was configured, default is BuildMark
-    println("Starting version ${AppBuildInfo.VERSION} of ${AppBuildInfo.PROJECT_NAME}")
+    println("Starting version ${BuildMark.VERSION} of ${BuildMark.PROJECT_NAME}")
 
     println("Authors:")
-    AppBuildInfo.AUTHORS.forEach {
+    BuildMark.AUTHORS.forEach {
         println(it)
     } 
     
-    if (AppBuildInfo.DEBUG)
+    if (BuildMark.DEBUG)
         logger.setLevel(Level.DEBUG)
 }
 ```
