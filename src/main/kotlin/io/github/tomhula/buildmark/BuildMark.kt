@@ -22,7 +22,7 @@ class BuildMark : Plugin<Project>
             project.afterEvaluate {
                 // I cannot figure out how to lazily configure only the extension.sourceSets so that the convention sourcesets are not registered if they are overridden
                 project.kotlinExtension.sourceSets.matching { it.name in extension.sourceSets.get() }.configureEach {
-                    kotlin.srcDir(extension.outputDirectory)
+                    generatedKotlin.srcDir(extension.outputDirectory)
                 }
             }
         }
