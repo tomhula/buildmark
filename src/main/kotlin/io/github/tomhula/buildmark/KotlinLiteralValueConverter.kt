@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
 /**
- * Converts a value of a supported type to a Kotlin code literal of that value.
+ * Converts a value of a supported type to a Kotlin expression that evaluates to that value.
  * @see convert
  */
 internal class KotlinLiteralValueConverter
