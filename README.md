@@ -56,6 +56,11 @@ fun main()
 }
 ```
 
+## Supported Types
+Int, Boolean, Byte, Short, Float, Double, Long, Char, String, Pair,
+List, Set, Map,
+Array, IntArray, ByteArray, ShortArray, LongArray, FloatArray, DoubleArray, BooleanArray, CharArray
+
 ## Advantages over alternatives
 
 An alternative way to pass information to the runtime using Gradle is with command line arguments.
