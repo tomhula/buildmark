@@ -211,6 +211,6 @@ internal class KotlinLiteralValueConverter
         CodeBlock.of("'%L'", literal)
     }
 
-    /** Converts a collection of a comma separated string of a result of [convert] on each element. */
+    /** Converts a collection to a comma separated string of a result of [convert] on each element. */
     private fun Iterable<*>.toConvertedArgumentList() = joinToString(", ", transform = ::convert)
 }
