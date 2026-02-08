@@ -16,7 +16,7 @@ gradlePlugin {
             displayName = "BuildMark"
             description = "Gradle plugin for embedding build information (like project name, version,...) into the code so it can be read at runtime."
             tags = listOf("build", "version", "project", "kotlin")
-            implementationClass = "io.github.tomhula.buildmark.BuildMark"
+            implementationClass = "io.github.tomhula.buildmark.BuildMarkPlugin"
         }
     }
 }

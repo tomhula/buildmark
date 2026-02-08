@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-class BuildMark : Plugin<Project>
+class BuildMarkPlugin : Plugin<Project>
 {
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     override fun apply(project: Project)
