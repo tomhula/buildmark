@@ -6,6 +6,14 @@
 
 A Gradle plugin that generates a Kotlin object with build information at compile time. This allows you to access build-time properties in your application at runtime.
 
+## Notice
+
+Consider using a more customisable and well-maintained [BuildKonfig](https://github.com/yshrsmz/BuildKonfig).
+At the time of creating BuildMark I didn't know it existed.
+However, BuildMark has few advantages at the time of writing:
+- It supports more types, see [Supported Types](#supported-types)
+- It supports Kotlin/JVM and such, not just Kotlin/Multiplatform
+
 ## Installation and usage
 
 ```kotlin
