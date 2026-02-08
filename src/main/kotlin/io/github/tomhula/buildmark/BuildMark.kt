@@ -33,8 +33,9 @@ class BuildMark : Plugin<Project>
                 dependsOn(generateTask)
             }
             project.afterEvaluate {
-                project.kotlinExtension.sourceSets.filter { it.name in extension.sourceSets.get() }.forEach {
-                    it.generatedKotlin.srcDir(extension.outputDirectory)
+                val configuredSourceSets = extension.sourceSets.get()
+                project.kotlinExtension.sourceSets.filter { it.name in configuredSourceSets }.forEach {
+                    it.kotlin.srcDir(extension.outputDirectory)
                 }
             }
         }
