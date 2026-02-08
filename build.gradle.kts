@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.tomhula"
-version = "1.0.3"
+version = providers.gradleProperty("version").getOrElse("SNAPSHOT")
 
 gradlePlugin {
     website = "https://github.com/tomhula/buildmark"

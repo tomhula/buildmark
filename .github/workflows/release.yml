@@ -1,0 +1,70 @@
+name: CD
+
+on:
+  push:
+    tags: [ 'v[0-9]+.[0-9]+.[0-9]+' ]
+
+jobs:
+  publish:
+    name: Publish BuildMark to Gradle Plugins Portal
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          
+      - name: Extract Version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Publish to Gradle Plugins Portal
+        run: ./gradlew publishPlugins -Pversion=${{ env.VERSION }} --no-configuration-cache
+        env:
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+  
+  gh_release:
+    name: Create GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # github.ref_name is the tag (e.g., 'v1.0.0')
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+
+  update_readme:
+    name: Update project version in README
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main # <--- Important: Checkout main, not the tag
+
+      - name: Update Version in README
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          SCRIPT='s/(id\("io.github.tomhula.buildmark"\) version ")(.+?)"/\1'"$VERSION"'"/'
+          sed -i -E "$SCRIPT" README.md
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update plugin version in README to ${{ github.ref_name }}"
+          branch: main
+          file_pattern: README.md
