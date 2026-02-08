@@ -2,6 +2,7 @@ package io.github.tomhula.buildmark
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
@@ -33,8 +34,14 @@ class BuildMark : Plugin<Project>
                 dependsOn(generateTask)
             }
             project.afterEvaluate {
-                val configuredSourceSets = extension.sourceSets.get()
-                project.kotlinExtension.sourceSets.filter { it.name in configuredSourceSets }.forEach {
+                val configuredSourceSetsNames = extension.sourceSets.get()
+                val sourceSets = configuredSourceSetsNames.associateWith { kotlinExtension.sourceSets.findByName(it) }
+                
+                val notFoundSourceSetsNames = sourceSets.filterValues { it == null }.keys
+                
+                logger.logSourceSetsNotFoundWarning(notFoundSourceSetsNames)
+                
+                sourceSets.values.filterNotNull().forEach {
                     // TODO: Use it.generatedKotlin once ite is not experimental
                     it.kotlin.srcDir(extension.outputDirectory)
                 }
@@ -50,5 +57,22 @@ class BuildMark : Plugin<Project>
         targetObjectName.convention("BuildMark")
         options.convention(mapOf("VERSION" to project.version.toString()))
         sourceSets.convention(setOf("main", "commonMain"))
+    }
+    
+    private fun Logger.logSourceSetsNotFoundWarning(notFoundSourceSets: Set<String>)
+    {
+        when (notFoundSourceSets.size)
+        {
+            1 -> warn("WARNING: BuildMark: Source-set '{}' was not found, ignoring it.", notFoundSourceSets.first())
+            else -> warn("WARNING: BuildMark: Source-sets {} were not found, ignoring them.", notFoundSourceSets.toList().joinToStringWithAnd { "'$it'" })
+        }
+    }
+
+    private fun <T> List<T>.joinToStringWithAnd(formatter: (T) -> String) = when (size)
+    {
+        0 -> ""
+        1 -> formatter(this[0])
+        2 -> "${formatter(this[0])} and ${formatter(this[1])}"
+        else -> dropLast(1).joinToString(", ") { formatter(it) } + " and " + formatter(last())
     }
 }
