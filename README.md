@@ -10,7 +10,7 @@ A Gradle plugin that generates a Kotlin object with build information at compile
 
 ```kotlin
 plugins {
-    id("io.github.tomhula.buildmark") version "1.0.3"
+    id("io.github.tomhula.buildmark") version "2.0.0"
 }
 
 buildMark {
