@@ -17,6 +17,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
           
       - name: Extract Version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
