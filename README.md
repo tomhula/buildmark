@@ -18,7 +18,7 @@ However, BuildMark has few advantages at the time of writing:
 
 ```kotlin
 plugins {
-    id("io.github.tomhula.buildmark") version "2.0.0"
+    id("io.github.tomhula.buildmark") version "2.0.1"
 }
 
 buildMark {
