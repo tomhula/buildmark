@@ -39,7 +39,7 @@ buildMark {
     }
     // Which Kotlin source-sets to add BuildMark to
     // By default, it's added to commonMain/main source-sets
-    sourceSets.set("jvmMain")
+    sourceSets.set(setOf("jvmMain"))
 }
 ```
 
