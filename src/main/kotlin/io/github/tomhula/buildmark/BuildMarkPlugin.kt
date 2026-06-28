@@ -63,6 +63,7 @@ class BuildMarkPlugin : Plugin<Project>
     {
         when (notFoundSourceSets.size)
         {
+            0 -> return
             1 -> warn("WARNING: BuildMark: Source-set '{}' was not found, ignoring it.", notFoundSourceSets.first())
             else -> warn("WARNING: BuildMark: Source-sets {} were not found, ignoring them.", notFoundSourceSets.toList().joinToStringWithAnd { "'$it'" })
         }
