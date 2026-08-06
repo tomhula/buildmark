@@ -31,7 +31,7 @@ internal abstract class GenerateBuildMarkTask : DefaultTask()
         val targetPackage = targetPackage.get()
         val options = options.get()
         
-        val properties = options.map { option ->
+        val properties = options.toSortedMap().map { option ->
             val variableDeclaration = if (option.value::class in constableTypes)
                 "const val" 
             else
