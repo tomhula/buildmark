@@ -19,8 +19,6 @@ internal abstract class GenerateBuildMarkTask : DefaultTask()
     @get:Input
     abstract val options: MapProperty<String, Any>
 
-    private val converter = KotlinLiteralValueConverter()
-
     @TaskAction
     fun generate()
     {
@@ -63,6 +61,8 @@ internal abstract class GenerateBuildMarkTask : DefaultTask()
     
     companion object
     {
+        private val converter = KotlinLiteralValueConverter()
+
         /** All types using which you can declare a compile-time constant with the 'const' keyword. */
         private val constableTypes = listOf(
             String::class,
